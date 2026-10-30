@@ -36,7 +36,10 @@ async def transcribe(file: UploadFile = File(...)) -> Transcript:
     if not data:
         raise HTTPException(status_code=400, detail="Empty file")
     if len(data) > MAX_AUDIO_BYTES:
-        raise HTTPException(status_code=413, detail="File is larger than 25 MB")
+        raise HTTPException(
+            status_code=413,
+            detail=f"File is larger than {MAX_AUDIO_BYTES // (1024 * 1024)} MB",
+        )
 
     audio = BytesIO(data)
     audio.name = f"upload{suffix}"
