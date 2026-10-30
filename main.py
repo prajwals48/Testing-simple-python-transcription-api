@@ -10,7 +10,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 WHISPER_MODEL = "whisper-1"
-MAX_AUDIO_BYTES = 25 * 1024 * 1024
+MAX_AUDIO_BYTES = 2 * 1024 * 1024
 ALLOWED_EXTENSIONS = {".mp3", ".mp4", ".mpeg", ".mpga", ".m4a", ".wav", ".webm"}
 
 app = FastAPI(title="Speech to text")
@@ -36,7 +36,7 @@ async def transcribe(file: UploadFile = File(...)) -> Transcript:
     if not data:
         raise HTTPException(status_code=400, detail="Empty file")
     if len(data) > MAX_AUDIO_BYTES:
-        raise HTTPException(status_code=413, detail="File is larger than 25 MB")
+        raise HTTPException(status_code=413, detail="File is larger than 2 MB")
 
     audio = BytesIO(data)
     audio.name = f"upload{suffix}"
