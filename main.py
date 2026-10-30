@@ -10,7 +10,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 WHISPER_MODEL = "whisper-1"
-MAX_AUDIO_BYTES = 25 * 1024 * 1024
+MAX_AUDIO_BYTES = 2 * 1024 * 1024
 ALLOWED_EXTENSIONS = {".mp3", ".mp4", ".mpeg", ".mpga", ".m4a", ".wav", ".webm"}
 
 app = FastAPI(title="Speech to text")
