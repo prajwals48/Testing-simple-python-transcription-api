@@ -30,7 +30,7 @@ def _client() -> AsyncOpenAI:
 async def transcribe(file: UploadFile = File(...)) -> Transcript:
     suffix = Path(file.filename or "").suffix.lower()
     if suffix not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Unsupported audio type")
+        raise HTTPException(status_code=400, detail=f"Unsupported audio type: {suffix}")
 
     data = await file.read(MAX_AUDIO_BYTES + 1)
     if not data:
