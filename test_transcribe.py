@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 from pytest import MonkeyPatch
 
@@ -31,3 +32,42 @@ def test_transcribe_returns_text(monkeypatch: MonkeyPatch) -> None:
 
     assert response.status_code == 200
     assert response.json() == {"text": "hello"}
+
+
+@pytest.mark.parametrize("suffix", [".ogg", ".oga", ".flac"])
+def test_transcribe_accepts_whisper_formats(monkeypatch: MonkeyPatch, suffix: str) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+    class _Result:
+        text = "hello"
+
+    class _Transcriptions:
+        async def create(self, *, model: str, file: object) -> _Result:
+            assert getattr(file, "name", None) == f"upload{suffix}"
+            return _Result()
+
+    class _Audio:
+        transcriptions = _Transcriptions()
+
+    class _Client:
+        audio = _Audio()
+
+    monkeypatch.setattr(main, "AsyncOpenAI", lambda: _Client())
+
+    response = TestClient(main.app).post(
+        "/transcribe",
+        files={"file": (f"clip{suffix}", b"not-real-audio", "application/octet-stream")},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"text": "hello"}
+
+
+def test_transcribe_rejects_unsupported_type() -> None:
+    response = TestClient(main.app).post(
+        "/transcribe",
+        files={"file": ("notes.txt", b"hello", "text/plain")},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Unsupported audio type: .txt"}
